@@ -1,0 +1,22 @@
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+   border: 0;
+   outline: solid 1px #f007;
+}
+body {
+   position: relative;
+   overflow: hidden;
+   width: 100svw;
+   height: 100svh;
+}
+
+#mainIframe {
+   position: fixed;
+   top: 0px;
+   left: 0px;
+   width: 250px;
+   height: 120px;
+   z-index: 1;
+}
