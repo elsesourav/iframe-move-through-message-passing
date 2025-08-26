@@ -26,69 +26,15 @@ A simple demo showing how to make an iframe draggable using `postMessage`. The i
 
 ## How It Looks
 
-### Initial State (Small Iframe)
+| Initial State | Hover State |
+|---------------|-------------|
+| <img src="assets/initial.svg" alt="Initial State" width="300"> | <img src="assets/hover.svg" alt="Hover State" width="300"> |
+| Small iframe (250×120) floating on page | Iframe expands to cover full screen |
 
-<div style="position: relative; width: 400px; height: 200px; background: #f0f0f0; border: 1px solid #ccc;">
-  <!-- Parent page viewport -->
-  <div style="position: absolute; top: 10px; left: 10px; width: 250px; height: 120px; background: #00f3; border: 1px solid #333;">
-    <!-- iframe with semi-transparent blue background -->
-    <div style="position: absolute; top: 0; left: 0; width: 250px; height: 120px; background: orange; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer;">
-      iframe
-    </div>
-  </div>
-  <div style="position: absolute; bottom: 5px; right: 5px; font-size: 12px; color: #666;">Parent Page (400×200)</div>
-</div>
-
-### Hover State (Expanded)
-
-<div style="position: relative; width: 400px; height: 200px; background: #f0f0f0; border: 1px solid #ccc;">
-  <!-- Parent page viewport -->
-  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #00f3; border: 1px solid #333;">
-    <!-- iframe expanded to full viewport -->
-    <div style="position: absolute; top: 10px; left: 10px; width: 250px; height: 120px; background: orange; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer;">
-      iframe
-    </div>
-  </div>
-  <div style="position: absolute; bottom: 5px; right: 5px; font-size: 12px; color: #666; z-index: 10;">Iframe Expanded (400×200)</div>
-</div>
-
-### Drag State (Handle Moving)
-
-<div style="position: relative; width: 400px; height: 200px; background: #f0f0f0; border: 1px solid #ccc;">
-  <!-- Parent page viewport -->
-  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #00f3; border: 1px solid #333;">
-    <!-- iframe expanded, handle moved -->
-    <div style="position: absolute; top: 60px; left: 120px; width: 250px; height: 120px; background: orange; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: grabbing; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
-      iframe
-    </div>
-  </div>
-  <div style="position: absolute; bottom: 5px; right: 5px; font-size: 12px; color: #666; z-index: 10;">Dragging (expanded iframe)</div>
-</div>
-
-### Final State (New Position)
-
-```html
-<div
-   style="position: relative; width: 400px; height: 200px; background: #f0f0f0; border: 1px solid #ccc;"
->
-   <!-- Parent page viewport -->
-   <div
-      style="position: absolute; top: 60px; left: 120px; width: 250px; height: 120px; background: #00f3; border: 1px solid #333;"
-   >
-      <!-- iframe shrunk back to small size at new position -->
-      <div
-         style="position: absolute; top: 0; left: 0; width: 250px; height: 120px; background: orange; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer;"
-      >
-         iframe
-      </div>
-   </div>
-   <div
-      style="position: absolute; bottom: 5px; right: 5px; font-size: 12px; color: #666;"
-   >
-      Dropped at new position
-   </div>
-</div>
-```
+| Drag State | Final State |
+|------------|-------------|
+| <img src="assets/drag.svg" alt="Drag State" width="300"> | <img src="assets/final.svg" alt="Final State" width="300"> |
+| Orange handle follows your mouse | Iframe shrinks back at new position |
 
 You never move the iframe directly during drag. You move a box inside the iframe, then commit that position back to the parent on drop.
 
