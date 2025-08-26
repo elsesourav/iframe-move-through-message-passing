@@ -9,7 +9,7 @@
             box-sizing: border-box;
             color: white;
          }
-         #move {
+         #dragHandle {
             position: absolute;
             width: 250px;
             height: 120px;
@@ -20,11 +20,12 @@
             font-weight: bold;
             cursor: pointer;
             user-select: none;
+            touch-action: none;
          }
       </style>
       <script src="./main.js" defer></script>
    </head>
    <body>
-      <div id="move">Main iframe</div>
+      <div id="dragHandle">iframe</div>
    </body>
 </html>
