@@ -1,4 +1,4 @@
-// Parent page messaging utilities
+// Page messaging utilities (for injected scripts)
 function pagePostMessage(type, data, contentWindow = window) {
    contentWindow.postMessage({ type, data }, "*");
 }
@@ -11,10 +11,8 @@ function pageOnMessage(type, callback) {
    });
 }
 
-// The iframe element we move around the parent page
 const mainIframeEl = document.getElementById("mainIframe");
- 
-// The iframe page asks the parent to resize/reposition the iframe
+
 pageOnMessage("resize", (data) => {
    if (!mainIframeEl) return;
    mainIframeEl.style.width = data.width;
