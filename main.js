@@ -11,12 +11,97 @@ function pageOnMessage(type, callback) {
    });
 }
 
-function dragStart(e) {
-   e.preventDefault();
-   pagePostMessage("start_drag", {
-      offsetX: e.clientX,
-      offsetY: e.clientY,
-   });
-}
+// Handle element inside iframe used to drag
+const dragHandle = document.getElementById("dragHandle");
 
-window.addEventListener("pointerdown", dragStart);
+// State flags
+let isExpanded = false; // whether iframe is currently expanded to full viewport
+let isDragging = false; // whether a drag gesture is active
+let iframePosition = { x: 0, y: 0 }; // last committed iframe left/top in parent
+let pointerOffset = { x: 0, y: 0 }; // pointer offset from handle's top-left during drag
+let collapsePending = false; // set true on pointerup; collapse on subsequent pointerleave
+
+// Expand iframe to full viewport so pointer events aren't clipped
+const expandIframeToViewport = () => {
+   pagePostMessage("resize", {
+      width: "100svw",
+      height: "100svh",
+      x: "0px",
+      y: "0px",
+   });
+   dragHandle.style.left = `${iframePosition.x}px`;
+   dragHandle.style.top = `${iframePosition.y}px`;
+};
+
+// Shrink iframe back to fixed size at the committed position
+const shrinkIframeToBox = () => {
+   const left = Number.parseFloat(dragHandle.style.left) || 0;
+   const top = Number.parseFloat(dragHandle.style.top) || 0;
+   iframePosition = { x: Math.round(left), y: Math.round(top) };
+
+   pagePostMessage("resize", {
+      width: "250px",
+      height: "120px",
+      x: `${iframePosition.x}px`,
+      y: `${iframePosition.y}px`,
+   });
+   dragHandle.style.left = "0px";
+   dragHandle.style.top = "0px";
+};
+
+// Expand on hover
+dragHandle.addEventListener("pointerenter", () => {
+   if (isExpanded) return;
+   isExpanded = true;
+   expandIframeToViewport();
+});
+
+// Collapse when leaving (only if not dragging)
+dragHandle.addEventListener("pointerleave", () => {
+   if (!isExpanded || isDragging) return;
+   isExpanded = false;
+   shrinkIframeToBox();
+});
+
+// Start drag on press
+dragHandle.addEventListener("pointerdown", (e) => {
+   if (!isExpanded) {
+      isExpanded = true;
+      expandIframeToViewport();
+   }
+   isDragging = true;
+   const rect = dragHandle.getBoundingClientRect();
+   pointerOffset.x = e.clientX - rect.left;
+   pointerOffset.y = e.clientY - rect.top;
+   if (dragHandle.setPointerCapture) dragHandle.setPointerCapture(e.pointerId);
+});
+
+// Move handle with pointer
+window.addEventListener("pointermove", (e) => {
+   if (!isDragging) return;
+   const newLeft = e.clientX - pointerOffset.x;
+   const newTop = e.clientY - pointerOffset.y;
+   dragHandle.style.left = `${newLeft}px`;
+   dragHandle.style.top = `${newTop}px`;
+});
+
+// End drag on release; collapse after subsequent leave
+dragHandle.addEventListener("pointerup", (e) => {
+   if (!isDragging) return;
+   isDragging = false;
+   isExpanded = false;
+   collapsePending = true;
+   if (dragHandle.releasePointerCapture)
+      dragHandle.releasePointerCapture(e.pointerId);
+
+   const left = Number.parseFloat(dragHandle.style.left) || 0;
+   const top = Number.parseFloat(dragHandle.style.top) || 0;
+   iframePosition = { x: Math.round(left), y: Math.round(top) };
+});
+
+// After pointerup, wait for pointer to leave handle, then shrink iframe
+dragHandle.addEventListener("pointerleave", () => {
+   if (!collapsePending) return;
+   collapsePending = false;
+   shrinkIframeToBox();
+});

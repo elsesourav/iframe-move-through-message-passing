@@ -1,4 +1,4 @@
-// Page messaging utilities (for injected scripts)
+// Parent page messaging utilities
 function pagePostMessage(type, data, contentWindow = window) {
    contentWindow.postMessage({ type, data }, "*");
 }
@@ -11,34 +11,14 @@ function pageOnMessage(type, callback) {
    });
 }
 
+// The iframe element we move around the parent page
 const mainIframeEl = document.getElementById("mainIframe");
-let isDragging = false;
-let dragOffset = { x: 0, y: 0 };
 
-pageOnMessage("start_drag", (data) => {
+// The iframe page asks the parent to resize/reposition the iframe
+pageOnMessage("resize", (data) => {
    if (!mainIframeEl) return;
-   isDragging = true;
-   dragOffset.x = Number(data?.offsetX) || 0;
-   dragOffset.y = Number(data?.offsetY) || 0;
-   mainIframeEl.style.pointerEvents = "none";
+   mainIframeEl.style.width = data.width;
+   mainIframeEl.style.height = data.height;
+   mainIframeEl.style.left = data.x;
+   mainIframeEl.style.top = data.y;
 });
-
-function endDrag() {
-   if (!isDragging) return;
-   isDragging = false;
-   if (mainIframeEl) mainIframeEl.style.pointerEvents = "auto";
-   pagePostMessage("drag_end");
-}
-
-addEventListener("pointermove", (e) => {
-   if (!isDragging || !mainIframeEl) return;
-   e.preventDefault();
-   const left = e.clientX - dragOffset.x;
-   const top = e.clientY - dragOffset.y;
-   mainIframeEl.style.left = `${left}px`;
-   mainIframeEl.style.top = `${top}px`;
-});
-
-addEventListener("pointerup", endDrag);
-addEventListener("pointercancel", endDrag);
-addEventListener("blur", endDrag);
