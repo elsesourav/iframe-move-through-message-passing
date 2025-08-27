@@ -22,6 +22,25 @@ let pointerOffset = { x: 0, y: 0 }; // pointer offset from handle's top-left dur
 let collapsePending = false; // set true on pointerup; collapse on subsequent pointerleave
 let expandTimer = null;
 
+
+
+// Collision detection function to keep drag within viewport bounds
+const applyCollisionDetection = (left, top) => {
+   const dragRect = dragHandle.getBoundingClientRect();
+   const dragWidth = dragRect.width || 250; // fallback to default width
+   const dragHeight = dragRect.height || 120; // fallback to default height
+
+   // Get viewport dimensions
+   const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+   const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+   
+   // Constrain position to viewport bounds
+   const constrainedLeft = Math.max(0, Math.min(left, viewportWidth - dragWidth));
+   const constrainedTop = Math.max(0, Math.min(top, viewportHeight - dragHeight));
+
+   return { x: constrainedLeft, y: constrainedTop };
+};
+
 // Expand iframe to full viewport so pointer events aren't clipped
 const expandIframeToViewport = () => {
    clearTimeout(expandTimer);
@@ -95,8 +114,12 @@ window.addEventListener("pointermove", (e) => {
    if (!isDragging) return;
    const newLeft = e.clientX - pointerOffset.x;
    const newTop = e.clientY - pointerOffset.y;
-   dragHandle.style.left = `${newLeft}px`;
-   dragHandle.style.top = `${newTop}px`;
+
+   // Apply collision detection to keep menu within viewport
+   const constrainedPosition = applyCollisionDetection(newLeft, newTop);
+
+   dragHandle.style.left = `${constrainedPosition.x}px`;
+   dragHandle.style.top = `${constrainedPosition.y}px`;
 });
 
 // End drag on release; collapse after subsequent leave
@@ -110,7 +133,16 @@ dragHandle.addEventListener("pointerup", (e) => {
 
    const left = Number.parseFloat(dragHandle.style.left) || 0;
    const top = Number.parseFloat(dragHandle.style.top) || 0;
-   iframePosition = { x: Math.round(left), y: Math.round(top) };
+
+   // Apply collision detection to final position
+   const constrainedPosition = applyCollisionDetection(left, top);
+   dragHandle.style.left = `${constrainedPosition.x}px`;
+   dragHandle.style.top = `${constrainedPosition.y}px`;
+
+   iframePosition = {
+      x: Math.round(constrainedPosition.x),
+      y: Math.round(constrainedPosition.y),
+   };
 });
 
 // After pointerup, wait for pointer to leave handle, then shrink iframe
