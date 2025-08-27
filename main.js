@@ -20,9 +20,13 @@ let isDragging = false; // whether a drag gesture is active
 let iframePosition = { x: 0, y: 0 }; // last committed iframe left/top in parent
 let pointerOffset = { x: 0, y: 0 }; // pointer offset from handle's top-left during drag
 let collapsePending = false; // set true on pointerup; collapse on subsequent pointerleave
+let expandTimer = null;
 
 // Expand iframe to full viewport so pointer events aren't clipped
 const expandIframeToViewport = () => {
+   clearTimeout(expandTimer);
+
+   dragHandle.style.opacity = "0";
    pagePostMessage("resize", {
       width: "100svw",
       height: "100svh",
@@ -31,22 +35,32 @@ const expandIframeToViewport = () => {
    });
    dragHandle.style.left = `${iframePosition.x}px`;
    dragHandle.style.top = `${iframePosition.y}px`;
+   setTimeout(() => {
+      dragHandle.style.opacity = "1";
+   }, 10);
 };
 
 // Shrink iframe back to fixed size at the committed position
 const shrinkIframeToBox = () => {
-   const left = Number.parseFloat(dragHandle.style.left) || 0;
-   const top = Number.parseFloat(dragHandle.style.top) || 0;
-   iframePosition = { x: Math.round(left), y: Math.round(top) };
+   clearTimeout(expandTimer);
 
-   pagePostMessage("resize", {
-      width: "250px",
-      height: "120px",
-      x: `${iframePosition.x}px`,
-      y: `${iframePosition.y}px`,
-   });
-   dragHandle.style.left = "0px";
-   dragHandle.style.top = "0px";
+   expandTimer = setTimeout(() => {
+      dragHandle.style.opacity = "0";
+      const left = Number.parseFloat(dragHandle.style.left) || 0;
+      const top = Number.parseFloat(dragHandle.style.top) || 0;
+      iframePosition = { x: Math.round(left), y: Math.round(top) };
+      pagePostMessage("resize", {
+         width: "250px",
+         height: "120px",
+         x: `${iframePosition.x}px`,
+         y: `${iframePosition.y}px`,
+      });
+      dragHandle.style.left = "0px";
+      dragHandle.style.top = "0px";
+      setTimeout(() => {
+         dragHandle.style.opacity = "1";
+      }, 10);
+   }, 300);
 };
 
 // Expand on hover
